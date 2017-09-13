@@ -153,8 +153,14 @@ def sample_from_model(model, param_file_path, vae_hyperParams, image_file_path, 
 if __name__ == "__main__":
 
     # load MNIST
-    f = h5py.File('./MNIST/data/binarized_mnist.h5')
-    mnist = {'train':np.copy(f['train']), 'valid':np.copy(f['valid']), 'test':np.copy(f['test'])}
+    # f = h5py.File('./MNIST/data/binarized_mnist.h5')
+    # mnist = {'train':np.copy(f['train']), 'valid':np.copy(f['valid']), 'test':np.copy(f['test'])}
+    from chainer import datasets
+    train, test = datasets.get_mnist(withlabel=False)
+    mnist = {'train': train,
+             'test': test,
+             'valid': test}
+
     np.random.shuffle(mnist['train'])
 
     # set architecture params
