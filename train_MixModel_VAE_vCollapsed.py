@@ -3,9 +3,11 @@ from os.path import join as pjoin
 import h5py
 import cPickle as cp
 
+from chainer import datasets
 import numpy as np
 import tensorflow as tf
 from tensorflow.examples.tutorials.mnist import input_data
+from sklearn.model_selection import train_test_split
 
 from models.gaussMMVAE_collapsed import GaussMMVAE
 from utils.sampling_utils import *
@@ -154,10 +156,15 @@ def sample_from_model(model, param_file_path, vae_hyperParams, image_file_path, 
 
 
 if __name__ == "__main__":
-
     # load MNIST
-    f = h5py.File('./MNIST/data/binarized_mnist.h5')
-    mnist = {'train':np.copy(f['train']), 'valid':np.copy(f['valid']), 'test':np.copy(f['test'])}
+    train, test = datasets.get_mnist(withlabel=False)
+    train = np.array(train, dtype=np.float32)
+    test = np.array(test, dtype=np.float32)
+
+    mnist = {'train': train,
+             'test': test,
+             'valid': test}
+
     np.random.shuffle(mnist['train'])
 
     # set architecture params
