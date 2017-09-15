@@ -66,7 +66,7 @@ def trainDLGMM(data, vae_hyperParams, hyperParams, param_save_path, logFile=None
     persister = tf.train.Saver()
 
     with tf.Session(config=hyperParams['tf_config']) as s:
-        s.run(tf.initialize_all_variables())
+        s.run(tf.global_variables_initializer())
 
         # for early stopping
         best_elbo = -10000000.
