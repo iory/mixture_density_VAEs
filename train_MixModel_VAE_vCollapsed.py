@@ -21,7 +21,7 @@ except ImportError:
 # command line arguments
 flags = tf.flags
 flags.DEFINE_integer("batchSize", 20, "batch size.")
-flags.DEFINE_integer("nEpochs", 1, "number of epochs to train.")
+flags.DEFINE_integer("nEpochs", 10, "number of epochs to train.")
 flags.DEFINE_float("adamLr", 1e-4, "AdaM learning rate.")
 flags.DEFINE_integer("hidden_size", 200, "number of hidden units in en/decoder.")
 flags.DEFINE_integer("latent_size", 50, "dimensionality of latent variables.")
@@ -68,7 +68,7 @@ def trainVAE(data, vae_hyperParams, hyperParams, param_save_path, logFile=None):
     persister = tf.train.Saver()
 
     with tf.Session(config=hyperParams['tf_config']) as s:
-        s.run(tf.initialize_all_variables())
+        s.run(tf.global_variables_initializer())
 
         # for early stopping
         best_elbo = -10000000.
@@ -83,6 +83,13 @@ def trainVAE(data, vae_hyperParams, hyperParams, param_save_path, logFile=None):
                 _, elbo_val = s.run([optimizer, model.elbo_obj], {model.X: x})
                 train_elbo += elbo_val
                 print(elbo_val)
+
+            print("hoge")
+            nImages = 100
+            sample_list = s.run(model.get_samples(nImages))
+            for i, samples in enumerate(sample_list):
+                image = Image.fromarray(tile_raster_images(X=samples, img_shape=(28, 28), tile_shape=(int(np.sqrt(nImages)), int(np.sqrt(nImages))), tile_spacing=(1, 1)))
+                image.save("./hoge_component"+str(i)+".png")
 
             # # validation
             # valid_elbo = 0.

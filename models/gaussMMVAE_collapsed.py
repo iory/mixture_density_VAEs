@@ -27,11 +27,16 @@ def compute_nll(x, x_recon_linear):
 def gauss_cross_entropy(mu_post, sigma_post, mu_prior, sigma_prior):
     d = (mu_post - mu_prior)
     d = tf.multiply(d,d)
-    return tf.reduce_sum(-tf.div(d + tf.multiply(sigma_post,sigma_post),(2.*sigma_prior*sigma_prior)) - tf.log(sigma_prior*2.506628), reduction_indices=1, keep_dims=True)
+    return tf.reduce_sum( - (d + tf.multiply(sigma_post, sigma_post)) - tf.log(sigma_prior*2.506628), reduction_indices=1, keep_dims=True)
+    # return tf.reduce_sum( - tf.div(d + tf.multiply(sigma_post, sigma_post), 2.0 * sigma_prior * sigma_prior) - tf.log(sigma_prior * 2.506628), reduction_indices=1, keep_dims=True)
 
+
+def tf_loggamma(x):
+    return tf.multiply((x - 0.5), tf.log(x + 1e-08)) - x + tf.multiply(0.5, tf.log(2 * np.pi))
 
 def beta_fn(a,b):
-    return tf.exp( tf.lgamma(a) + tf.lgamma(b) - tf.lgamma(a+b) )
+    return tf.exp( tf_loggamma(a) + tf_loggamma(b) - tf_loggamma(a+b) )
+    # return tf.exp( tf.lgamma(a) + tf.lgamma(b) - tf.lgamma(a+b) )
 
 
 def compute_kumar2beta_kld(a, b, alpha, beta):
@@ -163,10 +168,10 @@ class GaussMMVAE(object):
         for k in xrange(self.K-1):
             elbo += tf.multiply(self.pi_means[k+1], -compute_nll(self.X, self.x_recons_linear[k+1]) \
                                + gauss_cross_entropy(self.mu[k+1], self.sigma[k+1], self.prior['mu'][k+1], self.prior['sigma'][k+1]))
-            elbo -= compute_kumar2beta_kld(tf.expand_dims(self.kumar_a[:,k],1), tf.expand_dims(self.kumar_b[:,k],1), \
-                                               self.prior['dirichlet_alpha'], (self.K-1-k)*self.prior['dirichlet_alpha'])
+        #     elbo -= compute_kumar2beta_kld(tf.expand_dims(self.kumar_a[:,k],1), tf.expand_dims(self.kumar_b[:,k],1), \
+        #                                        self.prior['dirichlet_alpha'], (self.K-1-k)*self.prior['dirichlet_alpha'])
 
-        elbo += mcMixtureEntropy(self.pi_samples, self.z, self.mu, self.sigma, self.K)
+        # elbo += mcMixtureEntropy(self.pi_samples, self.z, self.mu, self.sigma, self.K)
 
         return tf.reduce_mean(elbo)
 
@@ -357,6 +362,7 @@ class DLGMM(GaussMMVAE):
         t_hyperParams['input_d'] = None
         self.decoder_params2 = self.init_decoder(t_hyperParams)
         self.decoder_params1 = self.init_decoder(hyperParams)
+
 
         self.x_recons_linear = self.f_prop()
 
@@ -555,7 +561,6 @@ class DLGMM(GaussMMVAE):
         log_gauss_post = tf.gather_nd(all_log_gauss_posts, component_samples2)
         log_gauss_post = tf.expand_dims(log_gauss_post,1)
 
-
         ### BOTTOM LEVEL
 
         # calc prior terms
@@ -568,7 +573,6 @@ class DLGMM(GaussMMVAE):
         log_gauss_prior1 = tf.gather_nd(all_log_gauss_priors1, component_samples1)
         log_gauss_prior1 = tf.expand_dims(log_gauss_prior1,1)
 
-
         all_log_beta_priors1 = []
         for k in xrange(self.K):
             temp = tf.zeros((tf.shape(a2_inv)[0],1))
@@ -580,7 +584,6 @@ class DLGMM(GaussMMVAE):
         log_beta_prior1 = tf.gather_nd(all_log_beta_priors1, component_samples2)
         log_beta_prior1 = tf.expand_dims(log_beta_prior1,1)
 
-
         # calc post terms
         all_log_gauss_posts1 = []
         for k in xrange(self.K):
@@ -590,7 +593,6 @@ class DLGMM(GaussMMVAE):
         all_log_gauss_posts1 = tf.concat(1, all_log_gauss_posts1)
         log_gauss_post1 = tf.gather_nd(all_log_gauss_posts1, component_samples1)
         log_gauss_post1 = tf.expand_dims(log_gauss_post1,1)
-
 
         all_log_kumar_posts1 = []
         for k in xrange(self.K):
