@@ -80,12 +80,7 @@ def trainDLGMM(data, vae_hyperParams, hyperParams, param_save_path, logFile=None
                 x = data['train'][batch_idx*hyperParams['batchSize']:(batch_idx+1)*hyperParams['batchSize'],:]
                 _, elbo_val = s.run([optimizer, model.elbo_obj], {model.X: x})
                 train_elbo += elbo_val/nTrainBatches
-
-            nImages = 100
-            sample_list = s.run(model.get_samples(nImages))
-            for i, samples in enumerate(sample_list):
-                image = Image.fromarray(tile_raster_images(X=samples, img_shape=(28, 28), tile_shape=(int(np.sqrt(nImages)), int(np.sqrt(nImages))), tile_spacing=(1, 1)))
-                image.save("./DLGMM_component"+str(i)+".png")
+                print("elbo_val = {}".format(elbo_val))
 
             # # validation
             # valid_elbo = 0.
