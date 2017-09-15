@@ -349,6 +349,8 @@ class DPVAE(GaussMMVAE):
 class DLGMM(GaussMMVAE):
     def __init__(self, hyperParams):
 
+        super(GaussMMVAE, self).__init__(hyperParams)
+
         self.X = tf.placeholder("float", [None, hyperParams['input_d']])
         self.prior = hyperParams['prior']
         self.K = hyperParams['K']
@@ -362,7 +364,6 @@ class DLGMM(GaussMMVAE):
         t_hyperParams['input_d'] = None
         self.decoder_params2 = self.init_decoder(t_hyperParams)
         self.decoder_params1 = self.init_decoder(hyperParams)
-
 
         self.x_recons_linear = self.f_prop()
 
