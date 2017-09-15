@@ -6,6 +6,7 @@ import cPickle as cp
 import numpy as np
 import tensorflow as tf
 from tensorflow.examples.tutorials.mnist import input_data
+from chainer import datasets
 
 from models.gaussMMVAE_collapsed import DLGMM
 from utils.sampling_utils import *
